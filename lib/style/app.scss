@@ -1,0 +1,93 @@
+$white-border: #dcdcdc;
+$white-text: #777;
+$main-margin-top: 42px;
+$main-margin-bottom: 42px;
+
+html, body, .full-height, #react, #react > .root, .sidebar {
+	height: 100%;
+	position: relative;
+}
+
+.sidebar {
+	padding-left: 0;
+	padding-right: 0;
+
+	> * {
+		padding-left: 15px;
+		padding-right: 15px;
+	}
+
+	> .client-list {
+		padding-left: 0;
+		padding-right: 0;
+
+		> * {
+			padding-left: 15px;
+			padding-right: 15px;
+		}
+
+		> nav {
+			padding-left: 0;
+			padding-right: 0;
+
+			li {
+				width: 100%;
+				border-bottom: 1px solid #485563;
+			}
+		}
+	}
+}
+
+.white-bg {
+	background: whitesmoke;
+	box-shadow: inset 10px 0px 10px -10px black;
+	color: $white-text;
+
+	.page-header {
+		border-bottom-color: $white-border
+	}
+}
+
+.static {
+	position: static;
+}
+
+.sidebar {
+	margin-top: $main-margin-top;
+	margin-bottom: $main-margin-bottom;
+}
+
+/**
+ * somethings broke...
+ */
+.btn-default, .nav > li > a:hover, .nav > li > a {
+	color: #ffffff;
+	background-color: #4e5d6c;
+	border-color: transparent;
+
+	&:hover {
+		background-color: #485563;
+	}
+}
+
+.nav-pills > li + li {
+	margin-left: 0px;
+}
+
+.align-bottom {
+	position: absolute;
+	bottom: $main-margin-bottom;
+}
+
+.inner-nav {
+	padding: 15px;
+
+	> .tab {
+		padding: 0px 10px;
+	}
+
+	> .tab.active {
+		font-weight: bold;
+		color: #777;
+	}
+}
