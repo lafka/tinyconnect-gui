@@ -8,9 +8,16 @@ html, body, .full-height, #react, #react > .root, .sidebar {
 	position: relative;
 }
 
+body {
+	background: whitesmoke;
+	color: $white-text;
+}
+
 .sidebar {
 	padding-left: 0;
 	padding-right: 0;
+	background: #2B3E50;
+	color: #EBEBEB;
 
 	> * {
 		padding-left: 15px;

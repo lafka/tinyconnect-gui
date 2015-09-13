@@ -31,7 +31,7 @@ class App extends React.Component {
   render() {
     return (
       <div className="root">
-        <RouteHandler clients={this.state.clients} backend={this.state.backend} />
+        <RouteHandler {...this.state} {...this.props} />
       </div>
     )
   }
