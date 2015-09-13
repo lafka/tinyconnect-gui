@@ -24,13 +24,11 @@ class App extends React.Component {
 
   componentWillMount() {
     this.state.backend.on('clients', function(clients) {
-      console.log('got clients')
       this.setState({clients: clients})
     }.bind(this))
   }
 
   render() {
-    console.log('rendering app')
     return (
       <div className="root">
         <RouteHandler clients={this.state.clients} backend={this.state.backend} />
@@ -38,6 +36,7 @@ class App extends React.Component {
     )
   }
 }
+
 Mixin.onClass(App, {
   getInitialState: App.getInitialState
 })

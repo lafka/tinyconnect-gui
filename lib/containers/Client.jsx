@@ -51,7 +51,7 @@ export class Client extends React.Component {
   }
 
   render() {
-    var client = this.props.client
+    var client = this.props.client || this.state.client
 
     if (!client)
       return this.renderErr()
@@ -69,23 +69,23 @@ export class Client extends React.Component {
 
           <Col xs={6} md={8} className="white-bg full-height">
 
-            <div className="inner-nav pull-right">
-              <Link className="tab" to="console"  params={{ref: client.ref}}>
-                <Glyphicon glyph="transfer">&nbsp;</Glyphicon>
-                Console
-              </Link>
+            <Grid fluid={true} className="full-height">
+              <div className="inner-nav pull-right" style={{zIndex: 2, position: 'relative'}}>
+                <Link className="tab" to="console"  params={{ref: client.ref}}>
+                  <Glyphicon glyph="transfer">&nbsp;</Glyphicon>
+                  Console
+                </Link>
 
-              <Link className="tab" to="settings" params={{ref: client.ref}}>
-                <Glyphicon glyph="cog">&nbsp;</Glyphicon>
-                Settings
-              </Link>
-            </div>
+                <Link className="tab" to="settings" params={{ref: client.ref}}>
+                  <Glyphicon glyph="cog">&nbsp;</Glyphicon>
+                  Settings
+                </Link>
+              </div>
 
-            <div>
-              <PageHeader>Some Port</PageHeader>
-
-              <RouteHandler client={this.props.client} />
-            </div>
+              <Row className="full-height" style={{zIndex: 1, position: 'relative'}}>
+                <RouteHandler client={client} />
+              </Row>
+            </Grid>
           </Col>
         </Row>
       </Grid>

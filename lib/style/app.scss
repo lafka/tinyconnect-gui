@@ -53,8 +53,8 @@ html, body, .full-height, #react, #react > .root, .sidebar {
 }
 
 .sidebar {
-	margin-top: $main-margin-top;
-	margin-bottom: $main-margin-bottom;
+	padding-top: $main-margin-top;
+	padding-bottom: $main-margin-bottom;
 }
 
 /**
@@ -89,5 +89,61 @@ html, body, .full-height, #react, #react > .root, .sidebar {
 	> .tab.active {
 		font-weight: bold;
 		color: #777;
+	}
+}
+
+$termbg: #eaeaea;
+$termbg-light: #efefef;
+
+.terminal {
+	position: relative;
+	cursor: text;
+	height: 100%;
+	font-family: monospace;
+	overflow: hidden;
+	background: $termbg;
+	border-radius: 3px;
+	border: 1px solid #ddd;
+
+	&:focus .prompt .prefix {
+		font-weight: bold;
+		outline: none;
+	}
+
+	> .formats {
+		width: 100%;
+		background: $termbg;
+		background: $termbg-light;
+		border-bottom: 1px solid #e7e7e7;
+		text-align: right;
+
+		> a {
+			display: inline-block;
+			padding: 10px 15px;
+			cursor: pointer;
+
+			&.active {
+				font-weight: bold;
+			}
+		}
+	}
+
+	> .output {
+		padding: 15px;
+	}
+
+	.term-caret {
+		background: #000;
+		width: 1.3ex;
+		height: 1em;
+		display: inline-block;
+	}
+
+	.line.channel-info {
+		color: #999;
+	}
+
+	.line.channel-client {
+		font-weight: bold;
 	}
 }

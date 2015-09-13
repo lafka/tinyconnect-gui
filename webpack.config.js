@@ -1,6 +1,8 @@
 var
   webpack = require('webpack'),
-  ExtractTextPlugin = require("extract-text-webpack-plugin")
+  ExtractTextPlugin = require("extract-text-webpack-plugin"),
+  WebpackNotifierPlugin = require('webpack-notifier')
+
 
 module.exports = {
     entry: [
@@ -27,6 +29,7 @@ module.exports = {
 
     plugins: [
       new webpack.NoErrorsPlugin(),
+      new WebpackNotifierPlugin(),
       new ExtractTextPlugin("dist/bundle.css")
     ]
 
