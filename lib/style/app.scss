@@ -1,5 +1,5 @@
 $white-border: #dcdcdc;
-$white-text: #777;
+$body-text: #777;
 $main-margin-top: 42px;
 $main-margin-bottom: 42px;
 
@@ -10,11 +10,15 @@ html, body, .full-height, #react, #react > .root, .sidebar {
 
 body {
 	background: whitesmoke;
-	color: $white-text;
+	color: $body-text;
 }
 
 .root.container-fluid {
 	padding: 0;
+
+	> .row {
+		margin: 0;
+	}
 }
 
 .sidebar {
@@ -65,7 +69,9 @@ body {
 }
 
 .page-header {
-	border-bottom-color: $white-border
+	border-bottom-color: $white-border;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 .static {
@@ -96,7 +102,7 @@ body {
 
 .align-bottom {
 	position: absolute;
-	bottom: 0;
+	bottom: 5px;
 }
 
 .inner-nav {
@@ -120,30 +126,36 @@ $termbg-light: #efefef;
 	cursor: text;
 	height: 100%;
 	font-family: monospace;
-	overflow: hidden;
 	background: $termbg;
 	border-radius: 3px;
 	border: 1px solid #ddd;
+	overflow: hidden;
 
 	&:focus .prompt .prefix {
 		font-weight: bold;
 		outline: none;
 	}
 
-	> .formats {
+	> .options {
 		width: 100%;
 		background: $termbg;
 		background: $termbg-light;
 		border-bottom: 1px solid #e7e7e7;
-		text-align: right;
 
-		> a {
+		.formats { float: right; }
+		.formats > a {
 			display: inline-block;
 			padding: 10px 15px;
 			cursor: pointer;
+			border-left: 1px solid transparent;
+			border-right: 1px solid transparent;
 
 			&.active {
 				font-weight: bold;
+				background: $termbg;
+				color: #555;
+				border-left: 1px solid #f7f7f7;
+				border-right: 1px solid #ddd;
 			}
 		}
 	}
@@ -181,3 +193,12 @@ $termbg-light: #efefef;
 .modal-error   .modal-header span, .modal-error   .modal-header h4,
 .modal-wait    .modal-header span, .modal-wait    .modal-header h4,
 .modal-confirm .modal-header span, .modal-confirm .modal-header h4 { color: #ffffff; }
+
+/**
+ * dropdown
+ */
+.dropdown-menu > li > a { color: $body-text; }
+.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
+	color: #333;
+}
+

@@ -25,7 +25,7 @@ export default class Sidebar extends React.Component {
             onClick={this.resize.bind(this, 'compact')}>
 
             <Glyphicon glyph="eye-close">&nbsp;</Glyphicon>
-            <span className="only-expanded">Close</span>
+            <span className="only-expanded">Compact</span>
           </a>
 
         </div>
@@ -37,7 +37,7 @@ export default class Sidebar extends React.Component {
                 style={{padding: '10px 15px', cursor: 'pointer'}}
                 onClick={this.resize.bind(this, 'expanded')}>
                 <Glyphicon glyph="eye-open">&nbsp;</Glyphicon>
-                Show
+                Expand
               </a>}
 
           <ClientList {...this.props} />

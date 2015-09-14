@@ -2,6 +2,7 @@ import React from 'react';
 import Mixin from 'react-mixin'
 
 import {PageHeader, Label, Overlay, Alert} from 'react-bootstrap'
+import {SplitButton, Button, MenuItem, Glyphicon} from 'react-bootstrap'
 
 import {EventEmitter} from 'events'
 
@@ -55,7 +56,9 @@ export default class Console extends React.Component {
       formatter: this.props.formatter || formatters.Ascii,
       formatterLabel: (this.props.formatter || {}).label || formatters.Ascii.label,
       parser: this.props.parser || Parser,
-      inputError: {}
+      inputError: {},
+      termHeight: 100,
+      serialMode: 'pipe'
     }
   }
 
@@ -99,6 +102,12 @@ export default class Console extends React.Component {
     var chr = String.fromCharCode(ev.charCode)
     this.setState(function(state) {
       if ("\r" === chr) {
+        if (!this.buf) {
+          this.emit('data', "")
+          this.buf = ""
+          return {inputError: {}}
+        }
+
         var res = this.state.parser(this.buf)
 
         if (res.error) {
@@ -121,6 +130,7 @@ export default class Console extends React.Component {
       buf: buf,
       channel: 'client'
     })
+
     this.forceUpdate()
   }
 
@@ -130,16 +140,34 @@ export default class Console extends React.Component {
     this.on('data', this.handleData.bind(this))
   }
 
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize.bind(this));
+    this.handleResize()
+  }
+
+  componentDidUpdate() {
+    var termNode = this.refs.term.getDOMNode()
+    termNode.scrollTop = termNode.scrollHeight
+  }
+
   componentWillUnmount() {
     if (this._timer)
       clearInterval(this._timer)
 
     this.removeListener('data', this.handleData.bind(this))
+    window.removeEventListener('resize', this.handleResize);
+  }
+
+  handleResize(e) {
+    var termNode = this.refs.term.getDOMNode()
+
+    this.setState({termHeight: document.body.clientHeight  - 42 - termNode.getBoundingClientRect().top})
   }
 
   render() {
     const infoChans = ["info"]
     var
+      client = this.props.client,
       lines = this.state.lines,
       buf = this.buf,
       formatter = function(line, k) {
@@ -154,9 +182,30 @@ export default class Console extends React.Component {
         )
       }.bind(this)
 
+
+    var bpsRates = [
+      2400,
+      4800,
+      9600,
+      14400,
+      19200,
+      28800,
+      38400,
+      56700,
+      76800,
+      115200,
+      230400
+    ]
+    var modes = ['pipe', 'sync']
+
+    var
+      bpsTitle = client.port.baudrate + " bps",
+      serialMode = this.state.serialMode,
+      connected = false
+
     return (
       <div>
-        <PageHeader>Console</PageHeader>
+        <PageHeader>Console: {client.name || client.port.uniqueID}</PageHeader>
 
         <div
           ref="term"
@@ -166,18 +215,42 @@ export default class Console extends React.Component {
           onBlur={this.handleTerminalBlur.bind(this)}
           onKeyPress={this.handleTerminalKey.bind(this)}
           onKeyDown={this.handleTerminalKey.bind(this)}
+          style={{height: this.state.termHeight + 'px'}}
           >
 
-          <div className="formats">
-            {_.map(formatters, (fmt, k) =>
-              <a
-                key={k}
-                onClick={this.setState.bind(this, {formatter: fmt, formatterLabel: fmt.label}, undefined)}
-                className={fmt.label === this.state.formatterLabel && 'active' || ''}
-                >
-                {fmt.label}
-              </a>
-            )}
+          <div className="options">
+            <SplitButton bsStyle="default" id="baudrates" title={bpsTitle}>
+              {_.map(bpsRates, (bps, k) =>
+                <MenuItem className={client.port.baudrate === bps && "active" || ""} eventKey={k} key={k}>{bps}</MenuItem>)}
+            </SplitButton>
+
+            <SplitButton bsStyle="default" id="tty-mode" title={serialMode}>
+              {_.map(modes, (mode, k) =>
+                <MenuItem className={serialMode === mode && "active" || ""} eventKey={k} key={k}>{mode}</MenuItem>)}
+            </SplitButton>
+
+            {!connected && <Button bsStyle="success">
+                <Glyphicon glyph="ok">&nbsp;</Glyphicon>
+                Connect
+              </Button>}
+
+            {connected && <Button bsStyle="danger">
+                <Glyphicon glyph="remove">&nbsp;</Glyphicon>
+                Disconnect
+              </Button>
+            }
+
+            <span className="formats">
+              {_.map(_.sortBy(formatters, 'order'), (fmt, k) =>
+                <a
+                  key={k}
+                  onClick={this.setState.bind(this, {formatter: fmt, formatterLabel: fmt.label}, undefined)}
+                  className={fmt.label === this.state.formatterLabel && 'active' || ''}
+                  >
+                  {fmt.label}
+                </a>
+              )}
+            </span>
           </div>
 
           <div className="output" ref="output">

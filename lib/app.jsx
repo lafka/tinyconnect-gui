@@ -44,22 +44,26 @@ class App extends React.Component {
       grid: {
         expanded: {
           sidebar: {
-            xs: 6,
-            md: 4
+            xs: 5,
+            md: 4,
+            lg: 3
           },
           main: {
-            xs: 6,
-            md: 8
+            xs: 7,
+            md: 8,
+            lg: 9
           }
         },
         compact: {
           sidebar: {
-            xs: 1,
-            md: 1
+            xs: 4,
+            md: 2,
+            lg: 1
           },
           main: {
-            xs: 11,
-            md: 11
+            xs: 8,
+            md: 10,
+            lg: 11
           }
         }
       }
@@ -79,16 +83,31 @@ class App extends React.Component {
     var sizes = this.state.grid[this.state.activegrid]
 
     return (
-      <Grid fluid={true} className="root full-height">
+      <Grid
+        fluid={true}
+        className="root full-height">
+
         <Row className="full-height">
-          <Col xs={sizes.sidebar.xs} md={sizes.sidebar.md} className="full-height">
+          <Col
+            xs={sizes.sidebar.xs}
+            md={sizes.sidebar.md}
+            lg={sizes.sidebar.lg}
+            style={{zIndex: 2, paddingLeft: 0}}
+            className="full-height sidebar-container">
+
             <Sidebar
               clients={this.state.clients}
               grid={this.state.activegrid}
               onResize={this.handleSidebarResize.bind(this)} />
           </Col>
 
-          <Col xs={sizes.main.xs} md={sizes.main.md} className="full-height">
+          <Col
+            xs={sizes.main.xs}
+            md={sizes.main.md}
+            lg={sizes.main.lg}
+            style={{zIndex: 1, padding: 0}}
+            className="full-height content">
+
             <RouteHandler {...this.state} {...this.props} />
           </Col>
         </Row>

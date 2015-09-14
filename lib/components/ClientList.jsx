@@ -3,7 +3,7 @@ import Mixin from 'react-mixin'
 
 import { Link } from 'react-router';
 
-import {Button, Alert, Nav} from 'react-bootstrap'
+import {Button, Alert, Nav, Glyphicon} from 'react-bootstrap'
 import {NavItemLink} from 'react-router-bootstrap'
 
 export default class ClientList extends React.Component {
@@ -27,6 +27,7 @@ export default class ClientList extends React.Component {
 
     return (
       <NavItemLink key={k} to="client" params={{ref: client.ref}}>
+        <Glyphicon glyph="hdd">&nbsp;</Glyphicon>
         {name}
       </NavItemLink>
     )
