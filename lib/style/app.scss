@@ -13,29 +13,48 @@ body {
 	color: $white-text;
 }
 
+.root.container-fluid {
+	padding: 0;
+}
+
 .sidebar {
 	padding-left: 0;
 	padding-right: 0;
 	background: #2B3E50;
 	color: #EBEBEB;
+	box-shadow: -10px 0px 10px 10px black;
+
+	hr {
+		border-top-color: #485563;
+	}
 
 	> * {
 		padding-left: 15px;
-		padding-right: 15px;
+		padding-right: 0;
 	}
 
-	> .client-list {
+	&.sidebar-compact .only-expanded {
+		display: none;
+	}
+
+	&.sidebar-compact .branding {
+		margin-bottom: 1.5em;
+	}
+
+
+	> .nav-list {
 		padding-left: 0;
 		padding-right: 0;
 
-		> * {
+		.filters {
 			padding-left: 15px;
 			padding-right: 15px;
 		}
 
-		> nav {
+		nav {
 			padding-left: 0;
 			padding-right: 0;
+			width: 100%;
 
 			li {
 				width: 100%;
@@ -45,14 +64,8 @@ body {
 	}
 }
 
-.white-bg {
-	background: whitesmoke;
-	box-shadow: inset 10px 0px 10px -10px black;
-	color: $white-text;
-
-	.page-header {
-		border-bottom-color: $white-border
-	}
+.page-header {
+	border-bottom-color: $white-border
 }
 
 .static {
@@ -83,7 +96,7 @@ body {
 
 .align-bottom {
 	position: absolute;
-	bottom: $main-margin-bottom;
+	bottom: 0;
 }
 
 .inner-nav {
@@ -154,3 +167,17 @@ $termbg-light: #efefef;
 		font-weight: bold;
 	}
 }
+
+
+
+/**
+ *  modal styles
+ */
+.modal-error .modal-header   { background-color: #d2322d; }
+.modal-wait .modal-header    { background-color: #428bca; }
+.modal-notify .modal-header  { background-color: #eeeeee; }
+.modal-confirm .modal-header { background-color: #333333; }
+
+.modal-error   .modal-header span, .modal-error   .modal-header h4,
+.modal-wait    .modal-header span, .modal-wait    .modal-header h4,
+.modal-confirm .modal-header span, .modal-confirm .modal-header h4 { color: #ffffff; }

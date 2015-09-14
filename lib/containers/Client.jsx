@@ -5,8 +5,6 @@ import Mixin from 'react-mixin';
 import {Grid, Row, Col} from 'react-bootstrap'
 import {PageHeader, Alert, Glyphicon} from 'react-bootstrap'
 
-import Sidebar from './../components/Sidebar.jsx'
-
 import Console from './Client/Console.jsx'
 import Settings from './Client/Settings.jsx'
 
@@ -17,8 +15,7 @@ export {Console, Settings}
 export class Client extends React.Component {
   static getInitialState() {
     return {
-      client: _.where(this.props.clients, {ref: this.props.params.ref})[0],
-      sidebar: true
+      client: _.where(this.props.clients, {ref: this.props.params.ref})[0]
     }
   }
 
@@ -28,20 +25,14 @@ export class Client extends React.Component {
 
   renderErr() {
     return (
-      <Grid className="landing" fluid={true} className="full-height">
-        <Row className="full-height">
-          <Sidebar {...this.props} />
+        <Col xs={6} md={8} className="white-bg full-height">
+          <PageHeader>Ooops, no such port</PageHeader>
 
-          <Col xs={6} md={8} className="white-bg full-height">
-            <PageHeader>Ooops, no such port</PageHeader>
-
-            <Alert bsStyle="warning">
-              <strong>No such serial port</strong>, the port might have been
-              removed or you may be using the wrong URL
-            </Alert>
-          </Col>
-        </Row>
-      </Grid>
+          <Alert bsStyle="warning">
+            <strong>No such serial port</strong>, the port might have been
+            removed or you may be using the wrong URL
+          </Alert>
+        </Col>
     )
   }
 
@@ -52,32 +43,26 @@ export class Client extends React.Component {
       return this.renderErr()
 
     return (
-      <Grid className="landing" fluid={true} className="full-height">
-        <Row className="full-height">
-          <Sidebar {...this.props} />
+      <Col xs={6} md={8} className="full-height">
 
-          <Col xs={6} md={8} className="white-bg full-height">
+        <Grid fluid={true} className="full-height">
+          <div className="inner-nav pull-right" style={{zIndex: 2, position: 'relative'}}>
+            <Link className="tab" to="console"  params={{ref: client.ref}}>
+              <Glyphicon glyph="transfer">&nbsp;</Glyphicon>
+              Console
+            </Link>
 
-            <Grid fluid={true} className="full-height">
-              <div className="inner-nav pull-right" style={{zIndex: 2, position: 'relative'}}>
-                <Link className="tab" to="console"  params={{ref: client.ref}}>
-                  <Glyphicon glyph="transfer">&nbsp;</Glyphicon>
-                  Console
-                </Link>
+            <Link className="tab" to="client-settings" params={{ref: client.ref}}>
+              <Glyphicon glyph="cog">&nbsp;</Glyphicon>
+              Settings
+            </Link>
+          </div>
 
-                <Link className="tab" to="settings" params={{ref: client.ref}}>
-                  <Glyphicon glyph="cog">&nbsp;</Glyphicon>
-                  Settings
-                </Link>
-              </div>
-
-              <Row className="full-height" style={{zIndex: 1, position: 'relative'}}>
-                <RouteHandler client={client} />
-              </Row>
-            </Grid>
-          </Col>
-        </Row>
-      </Grid>
+          <Row className="full-height" style={{zIndex: 1, position: 'relative'}}>
+            <RouteHandler client={client} />
+          </Row>
+        </Grid>
+      </Col>
     )
   }
 }

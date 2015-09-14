@@ -18,9 +18,16 @@ export default class ClientList extends React.Component {
   }
 
   renderClientLi(client, k) {
+    var name
+
+    if ('expanded' === this.props.grid)
+      name = client.name || client.port.uniqueID || client.port.path
+    else
+      name = client.name || client.port.path.replace(/.*\//, '')
+
     return (
       <NavItemLink key={k} to="client" params={{ref: client.ref}}>
-        {client.name || client.port.uniqueID || client.port.path}
+        {name}
       </NavItemLink>
     )
   }
@@ -38,18 +45,18 @@ export default class ClientList extends React.Component {
       clients = _.where(this.props.clients, _.pick(filters, (f) => f))
 
     return (
-      <div className="client-list">
-        <h4>Serial Ports</h4>
+      <div className="nav-list">
+        <h4 className="only-expanded" style={{paddingLeft: '15px'}}>Serial Ports</h4>
 
         {clients.length > 0 &&
           <Nav bsStyle='pills'>
-            {clients.map(this.renderClientLi)}
+            {clients.map(this.renderClientLi.bind(this))}
           </Nav>}
 
         {this.props.clients.length == 0 && <Alert>No clients available</Alert>}
         {(this.props.clients.length > 0 && clients.length == 0) && <Alert>No clients found matching your filter</Alert>}
 
-        <div className="filters align-bottom">
+        <div className="filters only-expanded">
           <h4>Filters</h4>
 
           <p>
