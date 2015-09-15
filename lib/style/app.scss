@@ -141,6 +141,8 @@ $termbg-light: #efefef;
 		background: $termbg;
 		background: $termbg-light;
 		border-bottom: 1px solid #e7e7e7;
+		position: absolute;
+		top: 0;
 
 		.formats { float: right; }
 		.formats > a {
@@ -162,11 +164,15 @@ $termbg-light: #efefef;
 
 	> .output {
 		padding: 15px;
+		overflow: hidden;
 
 		.channel-error { color: red; }
 		.channel-info { color: #999; }
 		.channel-client { font-weight: bold; }
 		.channel-state { font-style: italic }
+
+		.channel-upstream { color: blue; }
+		.channel-downstream { color: green; }
 	}
 
 	.term-caret {

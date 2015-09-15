@@ -64,7 +64,7 @@ export default class Console extends React.Component {
 
   componentWillMount() {
     this.on('data', this.handleData.bind(this))
-    //this.props.backend.on('client.state', this.handleNewClientState.bind(this))
+    this.props.backend.on('client.data:' + this.props.client.ref, this.handleClientData.bind(this))
   }
 
   componentDidMount() {
@@ -73,28 +73,41 @@ export default class Console extends React.Component {
   }
 
   componentDidUpdate() {
-    var termNode = this.refs.term.getDOMNode()
-    termNode.scrollTop = termNode.scrollHeight
+    var outputNode = this.refs.output.getDOMNode()
+    outputNode.scrollTop = outputNode.scrollHeight
   }
 
   componentWillUnmount() {
     if (this._timer)
       clearInterval(this._timer)
 
-    this.removeListener('data', this.handleData.bind(this))
+    this.removeListener('data', this.handleClientData.bind(this))
     window.removeEventListener('resize', this.handleResize);
 
-    //this.props.backend.removeListener('client.state', this.handleNewClientState)
+    this.props.backend.removeListener('client.data:' + this.props.client.ref, this.handleClientData.bind(this))
   }
 
   componentWillReceiveProps(nextProps) {
     this.log(nextProps.states[0], 'state', 'new client state -> ')
+
+    if (this.props.client.ref !== nextProps.client.ref) {
+      console.log('rebinding client.data:<...> from', this.props.client.ref, 'to', nextProps.client.ref)
+      this.props.backend.removeListener('client.data:' + this.props.client.ref, this.handleClientData.bind(this))
+      this.props.backend.on('client.data:' + nextProps.client.ref, this.handleClientData.bind(this))
+    }
   }
 
   handleResize(e) {
-    var termNode = this.refs.term.getDOMNode()
+    var
+      termNode = this.refs.term.getDOMNode(),
+      optsNode = this.refs.options.getDOMNode(),
+      outputNode = this.refs.output.getDOMNode()
 
-    this.setState({termHeight: document.body.clientHeight  - 42 - termNode.getBoundingClientRect().top})
+    var termHeight
+    this.setState({
+      termHeight: termHeight = document.body.clientHeight  - 42 - termNode.getBoundingClientRect().top,
+      outputHeight: termHeight
+    })
 
   }
 
@@ -136,6 +149,7 @@ export default class Console extends React.Component {
       return
 
     var chr = String.fromCharCode(ev.charCode)
+
     this.setState(function(state) {
       if ("\r" === chr) {
         if (!this.buf) {
@@ -151,6 +165,9 @@ export default class Console extends React.Component {
         } else {
           this.emit('data', res)
           this.buf = ""
+          this.props.backend.send('client.write', this.props.client.ref, res)
+            .done((res) => console.log('write OK', res),
+                  (res) => this.log(res, 'error', 'Write Failed: '))
           return {inputError: {}}
         }
       } else {
@@ -160,26 +177,24 @@ export default class Console extends React.Component {
     }.bind(this))
   }
 
-  handleData(buf, channel) {
+  handleClientData(buf, channel, meta) {
+    if ('Buffer' !== buf.type) {
+      console.log('ERROR got non-buffer client data')
+      return
+    }
+
+    this.handleData(new Buffer(buf.data), channel, meta)
+  }
+
+  handleData(buf, channel, meta) {
     this.state.lines.push({
       date: new Date(),
       buf: buf,
-      channel: channel || 'client'
+      channel: channel || 'client',
+      meta: meta
     })
 
     this.forceUpdate()
-  }
-
-  handleNewClientState(client) {
-    var connState
-
-    switch (this.state.serialMode) {
-      case 'pipe': connState = this.pipeState(client); break;
-      case 'sync': connState = this.syncState(client); break
-    }
-
-    console.log('connState', connState)
-    console.log('RecordedConnState', this.props.states)
   }
 
   log(res, channel, prefix) {
@@ -195,7 +210,7 @@ export default class Console extends React.Component {
 
 
   setMode(mode) {
-    this.props.backend.send('client.mode', mode)
+    this.props.backend.send('client.mode', this.props.client.ref, mode)
       .done(
        (res) => console.log('set-mode', res),
        (res) => this.log(res, 'error')
@@ -324,7 +339,7 @@ export default class Console extends React.Component {
           style={{height: this.state.termHeight + 'px'}}
           >
 
-          <div className="options">
+          <div className="options" ref="options">
             <SplitButton bsStyle="default" id="baudrates" title={bpsTitle}>
               {_.map(bpsRates, (bps, k) =>
                 <MenuItem className={client.port.baudrate === bps && "active" || ""} eventKey={k} key={k}>{bps}</MenuItem>)}
@@ -340,23 +355,24 @@ export default class Console extends React.Component {
                   >{mode}</MenuItem>)}
             </SplitButton>
 
-            {'down' == connected &&
               <Button
                 onClick={this.connect.bind(this)}
                 bsStyle="success">
 
                 <Glyphicon glyph="ok">&nbsp;</Glyphicon>
                 Connect
-              </Button>}
+              </Button>
 
-            {'up' === connected &&
               <Button
                 onClick={this.disconnect.bind(this)}
                 bsStyle="danger">
                 <Glyphicon glyph="remove">&nbsp;</Glyphicon>
                 Disconnect
               </Button>
-            }
+
+
+            {'pipe' === serialMode && <span>&nbsp;TCP: {this.props.states[0].remote ? 'up' : 'down'} </span>}
+            <span>&nbsp;Serial: {this.props.states[0].port ? 'up' : 'down'}</span>
 
             <span className="formats">
               {_.map(_.sortBy(formatters, 'order'), (fmt, k) =>
@@ -371,11 +387,16 @@ export default class Console extends React.Component {
             </span>
           </div>
 
-          <div className="output" ref="output">
+          <div
+            className="output"
+            ref="output"
+            style={{height: this.state.outputHeight + 'px'}}
+            >
+
             {lines.map(formatter)}
 
             <div className="prompt" ref="prompt">
-              <span className="prefix"> > </span>
+              <span className="prefix"> # </span>
               <span>{buf}</span>
               <span className="term-caret" ref="caret" />
 
