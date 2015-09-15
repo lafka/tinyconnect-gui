@@ -66,23 +66,36 @@ export class Client extends React.Component {
     if (!client)
       return this.renderErr()
 
+    var alert;
+
+    if (!client.available) {
+      alert = {
+        style: 'warning',
+        glyph: 'warning-sign',
+        content: <span>
+                   <strong>Warning: </strong> the serial port was removed. The client
+                   have been disconnected. Re-insert the serial port to resume communication.
+                 </span>
+      }
+    } else if (client.available && !previouslyAvailable) {
+      alert = {
+        style: 'success',
+        glyph: 'info-sign',
+        content: <span>Serial port re-connected.</span>,
+        expire: 7500
+      }
+    }
+
     return (
       <div>
+        {alert &&
+            <Expire delay={alert.expire}>
+              <Alert bsStyle={alert.style} style={{marginLeft: '-15px'}}>
+                 <Glyphicon glyph={alert.glyph}>&nbsp;</Glyphicon>
 
-        {!client.available &&
-              <Alert bsStyle="warning" style={{marginLeft: '-15px'}}>
-                 <Glyphicon glyph="warning-sign">&nbsp;</Glyphicon>
-                 <strong>Warning: </strong> the serial port was removed. The client
-                 have been disconnected. Re-insert the serial port to resume communication.
-              </Alert>}
-
-        {(client.available && !previouslyAvailable) &&
-            <Expire delay={7500}>
-              <Alert bsStyle="success" style={{marginLeft: '-15px'}}>
-                 <Glyphicon glyph="info-sign">&nbsp;</Glyphicon>
-                 Serial port connected again.
+                 {alert.content || null}
               </Alert>
-            </Expire>}
+            </Expire> || <div style={{padding: '15px', marginBottom: '21px', border: '1px solid transparent'}}>&nbsp;</div>}
       <Grid
         fluid={true}
         className="client">
@@ -114,6 +127,7 @@ export class Client extends React.Component {
       </div>
     )
   }
+
   renderErr() {
     return (
         <Col xs={12} md={11} lg={10} className="full-height">
