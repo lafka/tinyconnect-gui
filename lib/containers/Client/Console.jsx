@@ -58,8 +58,44 @@ export default class Console extends React.Component {
       parser: this.props.parser || Parser,
       inputError: {},
       termHeight: 100,
-      serialMode: 'pipe'
+      serialMode: 'pipe',
     }
+  }
+
+  componentWillMount() {
+    this.on('data', this.handleData.bind(this))
+    //this.props.backend.on('client.state', this.handleNewClientState.bind(this))
+  }
+
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize.bind(this));
+    this.handleResize()
+  }
+
+  componentDidUpdate() {
+    var termNode = this.refs.term.getDOMNode()
+    termNode.scrollTop = termNode.scrollHeight
+  }
+
+  componentWillUnmount() {
+    if (this._timer)
+      clearInterval(this._timer)
+
+    this.removeListener('data', this.handleData.bind(this))
+    window.removeEventListener('resize', this.handleResize);
+
+    //this.props.backend.removeListener('client.state', this.handleNewClientState)
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.log(nextProps.states[0], 'state', 'new client state -> ')
+  }
+
+  handleResize(e) {
+    var termNode = this.refs.term.getDOMNode()
+
+    this.setState({termHeight: document.body.clientHeight  - 42 - termNode.getBoundingClientRect().top})
+
   }
 
   handleTerminalBlur() {
@@ -124,44 +160,106 @@ export default class Console extends React.Component {
     }.bind(this))
   }
 
-  handleData(buf) {
+  handleData(buf, channel) {
     this.state.lines.push({
       date: new Date(),
       buf: buf,
-      channel: 'client'
+      channel: channel || 'client'
+    })
+
+    this.forceUpdate()
+  }
+
+  handleNewClientState(client) {
+    var connState
+
+    switch (this.state.serialMode) {
+      case 'pipe': connState = this.pipeState(client); break;
+      case 'sync': connState = this.syncState(client); break
+    }
+
+    console.log('connState', connState)
+    console.log('RecordedConnState', this.props.states)
+  }
+
+  log(res, channel, prefix) {
+    var buf = _.reduce(_.omit(res, 'at'), (acc, v, k) => acc + ", " + k + ": " + v, "").replace(/^, /, '')
+    this.state.lines.push({
+      date: res.at || new Date(),
+      buf: (prefix || "") + buf,
+      channel: channel || 'error'
     })
 
     this.forceUpdate()
   }
 
 
-
-  componentWillMount() {
-    this.on('data', this.handleData.bind(this))
+  setMode(mode) {
+    this.props.backend.send('client.mode', mode)
+      .done(
+       (res) => console.log('set-mode', res),
+       (res) => this.log(res, 'error')
+      )
   }
 
-  componentDidMount() {
-    window.addEventListener('resize', this.handleResize.bind(this));
-    this.handleResize()
+
+  connect() {
+    switch (this.state.serialMode) {
+      case 'pipe':
+        this.props.backend.send('client.connect', this.props.client.ref, ['tcp', 'serial'], 'pipe')
+          .done(
+             (res) => console.log('connect pipe', res),
+             (res) => this.log(res, 'error')
+          )
+        break
+
+      case 'sync':
+        this.props.backend.send('client.connect', this.props.client.ref, ['tcp'], 'sync')
+          .done(
+             (res) => console.log('connect sync', res),
+             (res) => this.log(res, 'error')
+          )
+        break
+
+      default:
+        this.setState({serialModeErr: true})
+        break;;
+    }
   }
 
-  componentDidUpdate() {
-    var termNode = this.refs.term.getDOMNode()
-    termNode.scrollTop = termNode.scrollHeight
+  disconnect() {
+    this.props.backend.send('client.disconnect')
+      .done(
+       (res) => console.log('disconnect', res),
+       (res) => this.log(res, 'error')
+      )
   }
 
-  componentWillUnmount() {
-    if (this._timer)
-      clearInterval(this._timer)
 
-    this.removeListener('data', this.handleData.bind(this))
-    window.removeEventListener('resize', this.handleResize);
+  /**
+   *  returns the connection state of the expectancy.
+   *  Will be of type: [`state`, `missing-up`, `missing-down`]
+   */
+  syncState(client) {
+    if (client.port.connected && !client.remote.connected)
+     return ['up', [], []]
+    else if (client.port.connected && client.remote.connected)
+      return ['excessive', [], ['tcp']]
+    else if (!client.port.connected && client.remote.connected)
+      return ['excessive', ['serial'], ['tcp']]
+    else
+      return ['down', ['tcp'], []]
   }
 
-  handleResize(e) {
-    var termNode = this.refs.term.getDOMNode()
-
-    this.setState({termHeight: document.body.clientHeight  - 42 - termNode.getBoundingClientRect().top})
+  pipeState(client) {
+    if (client.port.connected && client.remote.connected)
+     return ['up', [], []]
+    else if (client.port.connected && !client.remote.connected)
+      return ['partial', ['tcp'], []]
+    else if (!client.port.connected && client.remote.connected)
+      return ['partial', ['serial'], []]
+    else
+      return ['down', ['serial', 'tcp'], []]
   }
 
   render() {
@@ -198,11 +296,19 @@ export default class Console extends React.Component {
     ]
     var modes = ['pipe', 'sync']
 
+    var connState = {
+      'pipe':  this.pipeState(client),
+      'sync': this.syncState(client)
+    }
+
     var
       bpsTitle = client.port.baudrate + " bps",
       serialMode = this.state.serialMode,
-      connected = false
+      connected = connState[serialMode][0]
 
+    // for connection actions
+
+    var ctx = this
     return (
       <div>
         <PageHeader>Console: {client.name || client.port.uniqueID}</PageHeader>
@@ -226,15 +332,27 @@ export default class Console extends React.Component {
 
             <SplitButton bsStyle="default" id="tty-mode" title={serialMode}>
               {_.map(modes, (mode, k) =>
-                <MenuItem className={serialMode === mode && "active" || ""} eventKey={k} key={k}>{mode}</MenuItem>)}
+                <MenuItem
+                  onSelect={ctx.setMode.bind(ctx, mode)}
+                  className={serialMode === mode && "active" || ""}
+                  eventKey={k}
+                  key={k}
+                  >{mode}</MenuItem>)}
             </SplitButton>
 
-            {!connected && <Button bsStyle="success">
+            {'down' == connected &&
+              <Button
+                onClick={this.connect.bind(this)}
+                bsStyle="success">
+
                 <Glyphicon glyph="ok">&nbsp;</Glyphicon>
                 Connect
               </Button>}
 
-            {connected && <Button bsStyle="danger">
+            {'up' === connected &&
+              <Button
+                onClick={this.disconnect.bind(this)}
+                bsStyle="danger">
                 <Glyphicon glyph="remove">&nbsp;</Glyphicon>
                 Disconnect
               </Button>

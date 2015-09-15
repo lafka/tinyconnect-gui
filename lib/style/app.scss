@@ -162,6 +162,11 @@ $termbg-light: #efefef;
 
 	> .output {
 		padding: 15px;
+
+		.channel-error { color: red; }
+		.channel-info { color: #999; }
+		.channel-client { font-weight: bold; }
+		.channel-state { font-style: italic }
 	}
 
 	.term-caret {
@@ -169,14 +174,6 @@ $termbg-light: #efefef;
 		width: 1.3ex;
 		height: 1em;
 		display: inline-block;
-	}
-
-	.line.channel-info {
-		color: #999;
-	}
-
-	.line.channel-client {
-		font-weight: bold;
 	}
 }
 
