@@ -29,10 +29,12 @@ export default class Expire extends React.Component {
   setTimer() {
     this._timer != null ? clearTimeout(this._timer) : null
 
-    this._timer = setTimeout(function() {
-      this.setState({visible: false})
-      this._timer = null
-    }.bind(this), this.props.delay)
+    if (this.props.delay > 0) {
+      this._timer = setTimeout(function() {
+        this.setState({visible: false})
+        this._timer = null
+      }.bind(this), this.props.delay)
+    }
   }
 
   render() {
@@ -42,6 +44,5 @@ export default class Expire extends React.Component {
 
 Mixin.onClass(Expire, {
   getInitialState: Expire.getInitialState,
-  getDefaultProps: Expire.getDefaultProps
 })
 
