@@ -30,8 +30,8 @@ export class Client extends React.Component {
     return {
       at: new Date(),
       available: client.available,
-      port: client.port.connected,
-      remote: client.remote.connected
+      port: true === client.port.connected,
+      remote: true === client.remote.connected
     }
   }
 
@@ -41,30 +41,20 @@ export class Client extends React.Component {
       states = this.state.states;
 
     if (client) {
-      states.unshift(this.clientState(client))
+      var newState = this.clientState(client)
+
+      //if (!_.eq(_.without(newState, 'at'), _.without(states[0], 'at')))
+        states.unshift(newState)
 
       this.setState({
         client: client,
-        states: states
+        states: states.slice(0, 10)
       })
     } else {
       this.setState({
         client: client
       })
     }
-  }
-
-  renderErr() {
-    return (
-        <Col xs={12} md={11} lg={10} className="full-height">
-          <PageHeader>Ooops, no such port</PageHeader>
-
-          <Alert bsStyle="warning">
-            <strong>No such serial port</strong>, the port might have been
-            removed or you may be using the wrong URL
-          </Alert>
-        </Col>
-    )
   }
 
   render() {
@@ -115,13 +105,25 @@ export class Client extends React.Component {
               <Row className="full-height" style={{zIndex: 1, position: 'relative'}}>
 
 
-                <RouteHandler client={client} />
+                <RouteHandler client={client} states={states} backend={this.props.backend}/>
               </Row>
             </Grid>
           </Col>
         </Row>
       </Grid>
       </div>
+    )
+  }
+  renderErr() {
+    return (
+        <Col xs={12} md={11} lg={10} className="full-height">
+          <PageHeader>Ooops, no such port</PageHeader>
+
+          <Alert bsStyle="warning">
+            <strong>No such serial port</strong>, the port might have been
+            removed or you may be using the wrong URL
+          </Alert>
+        </Col>
     )
   }
 }

@@ -27,9 +27,19 @@ class App extends React.Component {
     var backend = new Backend(backendOpts)
 
     backend.on('open', function() {
-      backend.send('clients')
-      backend.send('settings')
-    })
+      backend.send('clients').done( (ev) => this.setState({clients: ev.clients}) )
+      backend.send('settings').done((ev) => this.setState({settings: ev.settings}))
+      backend.on('client.state', function(client) {
+        this.setState(function(prevState) {
+          var idx = _.findIndex(prevState.clients, {ref: client.ref})
+
+          if (idx >= 0)
+            prevState.clients[idx] = client
+
+          return {clients: prevState.clients}
+        })
+      }.bind(this))
+    }.bind(this))
 
     backend.on('close', function(args) {
       console.log('close/args', args)
