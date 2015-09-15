@@ -15,6 +15,8 @@ import About from './containers/About.jsx'
 import Settings from './containers/Settings.jsx'
 import {Client, Console as ClientConsole, Settings as ClientSettings} from './containers/Client.jsx'
 
+import {BackendConnectionError} from './errors.jsx'
+
 import 'bootswatch-sass/superhero/bootstrap.css'
 import './style/app.scss'
 
@@ -26,7 +28,19 @@ class App extends React.Component {
 
     var backend = new Backend(backendOpts)
 
+    var closeHandle
     backend.on('open', function() {
+      backend.removeListener('close', closeHandle)
+
+      backend.on('close', function(args) {
+        this.setState({
+          backendState: {
+            state: 'down',
+            reason: args.reason
+          }
+        })
+      }.bind(this))
+
       backend.send('clients').done( (ev) => this.setState({clients: ev.clients}) )
       backend.send('settings').done((ev) => this.setState({settings: ev.settings}))
       backend.on('client.state', function(client) {
@@ -39,15 +53,23 @@ class App extends React.Component {
           return {clients: prevState.clients}
         })
       }.bind(this))
+
+      // rebind on close
     }.bind(this))
 
-    backend.on('close', function(args) {
-      console.log('close/args', args)
-    })
+    backend.on('close', closeHandle = function(args) {
+      this.setState({
+        backendState: {
+          state: 'down',
+          reason: args.reason
+       }
+      })
+    }.bind(this))
 
     return {
       backendOpts: backendOpts,
       backend: backend,
+      backendState: {},
       clients: [],
       settings: {},
       activegrid: 'expanded',
@@ -92,6 +114,7 @@ class App extends React.Component {
   render() {
     var sizes = this.state.grid[this.state.activegrid]
 
+    var ctx = this
     return (
       <Grid
         fluid={true}
@@ -117,6 +140,11 @@ class App extends React.Component {
             lg={sizes.main.lg}
             style={{zIndex: 1, padding: 0}}
             className="full-height content">
+
+            <BackendConnectionError
+              show={'down' === ctx.state.backendState.state}
+              backendState={ctx.state.backendState}
+              backendOpts={ctx.state.backendOpts} />
 
             <RouteHandler {...this.state} {...this.props} />
           </Col>
