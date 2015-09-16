@@ -212,7 +212,7 @@ export default class Console extends React.Component {
   setMode(mode) {
     this.props.backend.send('client.mode', this.props.client.ref, mode)
       .done(
-       (res) => console.log('set-mode', res),
+       (res) => this.setState({serialMode: mode}),
        (res) => this.log(res, 'error')
       )
   }

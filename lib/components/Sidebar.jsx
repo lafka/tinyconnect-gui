@@ -17,11 +17,11 @@ export default class Sidebar extends React.Component {
     return (
       <div className={"sidebar sidebar-" + this.props.grid}>
         <div className="branding">
-          <img src="lib/images/branding-neg.png" width={'compact' === this.props.grid ? 70 : 150}/>
+          <img src={require("../images/branding-neg.png")} width={'compact' === this.props.grid ? 70 : 150}/>
 
           <a
             className="only-expanded btn-default pull-right"
-            style={{padding: '7px 15px'}}
+            style={{padding: '7px 15px', cursor: 'pointer'}}
             onClick={this.resize.bind(this, 'compact')}>
 
             <Glyphicon glyph="eye-close">&nbsp;</Glyphicon>

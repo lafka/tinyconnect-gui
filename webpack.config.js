@@ -4,11 +4,16 @@ var
   WebpackNotifierPlugin = require('webpack-notifier')
 
 
+var amendSources = function(sources) {
+  if (process.env.NODE_ENV !== 'production') {
+    sources.unshift('webpack/hot/only-dev-server');
+  }
+
+  return sources
+}
+
 module.exports = {
-    entry: [
-      'webpack/hot/only-dev-server',
-      "./lib/app.jsx"
-    ],
+    entry: amendSources(["./lib/app.jsx"]),
 
     output: {
         path: __dirname + '/dist',
@@ -23,7 +28,9 @@ module.exports = {
             {test: /\.s[ca]ss$/,                loader:  ExtractTextPlugin.extract('style', 'css-loader!sass-loader') },
             {test: /\.(woff|woff2)$/,           loader:  'url-loader?limit=100000' },
             {test: /\.(ttf|eot)$/,              loader:  'file-loader' },
-            {test: /\.(png|jpg|jpeg|gif|svg)$/, loader:  'url-loader?limit=10000' }
+            {test: /\.(png|jpg|jpeg|gif|svg)$/, loader:  'url-loader?limit=10000' },
+            {test: /\.json$/, loader:  'json-loader' },
+            {test: /\.html$/, loader:  'file-loader?name=[path][name].[ext]' }
         ]
     },
 
