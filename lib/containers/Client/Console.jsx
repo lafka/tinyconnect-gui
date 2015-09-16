@@ -58,7 +58,6 @@ export default class Console extends React.Component {
       parser: this.props.parser || Parser,
       inputError: {},
       termHeight: 100,
-      serialMode: 'pipe',
     }
   }
 
@@ -225,16 +224,42 @@ export default class Console extends React.Component {
 
 
   setMode(mode) {
-    this.props.backend.send('client.mode', this.props.client.ref, mode)
+    this.props.backend.send('client.update', this.props.client.ref, {mode: mode})
       .done(
-       (res) => this.setState({serialMode: mode}),
-       (res) => this.log(res, 'error')
+        function(client) {
+          this.props.backend.emit('client.state', client)
+
+          // enter new connection state ONLY IF we are already connected
+          if (this.props.states[0].remote || this.props.states[0].port)
+            this.connect2(mode)
+        }.bind(this),
+        (err) => this.props.notify({
+            expire: 0,
+            glyph: 'warning-sign',
+            content: <span><strong>Failed to set mode</strong> <em>{err.error}</em></span>
+          })
+      )
+  }
+
+  patchClient(patch) {
+    this.props.backend.send('client.update', this.props.client.ref, patch)
+      .done(
+        (client) => null,
+        (err) => this.props.notify({
+            expire: 0,
+            glyph: 'warning-sign',
+            content: <span><strong>Failed to update client:</strong> <em>{err.error}</em></span>
+          })
       )
   }
 
 
   connect() {
-    switch (this.state.serialMode) {
+    return this.connect2();
+  }
+
+  connect2(mode) {
+    switch (mode || this.props.client.mode) {
       case 'pipe':
         this.props.backend.send('client.connect', this.props.client.ref, ['tcp', 'serial'], 'pipe')
           .done(
@@ -244,7 +269,7 @@ export default class Console extends React.Component {
         break
 
       case 'sync':
-        this.props.backend.send('client.connect', this.props.client.ref, ['tcp'], 'sync')
+        this.props.backend.send('client.connect', this.props.client.ref, ['serial'], 'sync')
           .done(
              (res) => console.log('connect sync', res),
              (res) => this.log(res, 'error')
@@ -270,27 +295,6 @@ export default class Console extends React.Component {
    *  returns the connection state of the expectancy.
    *  Will be of type: [`state`, `missing-up`, `missing-down`]
    */
-  syncState(client) {
-    if (client.port.connected && !client.remote.connected)
-     return ['up', [], []]
-    else if (client.port.connected && client.remote.connected)
-      return ['excessive', [], ['tcp']]
-    else if (!client.port.connected && client.remote.connected)
-      return ['excessive', ['serial'], ['tcp']]
-    else
-      return ['down', ['tcp'], []]
-  }
-
-  pipeState(client) {
-    if (client.port.connected && client.remote.connected)
-     return ['up', [], []]
-    else if (client.port.connected && !client.remote.connected)
-      return ['partial', ['tcp'], []]
-    else if (!client.port.connected && client.remote.connected)
-      return ['partial', ['serial'], []]
-    else
-      return ['down', ['serial', 'tcp'], []]
-  }
 
   render() {
     const infoChans = ["info"]
@@ -326,15 +330,9 @@ export default class Console extends React.Component {
     ]
     var modes = ['pipe', 'sync']
 
-    var connState = {
-      'pipe':  this.pipeState(client),
-      'sync': this.syncState(client)
-    }
-
     var
       bpsTitle = client.port.baudrate + " bps",
-      serialMode = this.state.serialMode,
-      connected = connState[serialMode][0]
+      serialMode = this.props.client.mode
 
     // for connection actions
 
