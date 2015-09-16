@@ -43,10 +43,7 @@ export default class ClientList extends React.Component {
   render() {
     var
       filters = this.state.filter,
-      activeClient = this.props.client,
-      clients = _.filter(this.props.clients, function(client) {
-        return _.isMatch(client, {ref: (activeClient || {}).ref}) || _.pick(filters, _.identity)
-      })
+      clients = _.where(this.props.clients, _.pick(filters, _.identity))
 
     return (
       <div className="nav-list">
