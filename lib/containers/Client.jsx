@@ -19,7 +19,7 @@ export class Client extends React.Component {
     var client = _.where(this.props.clients, {ref: this.props.params.ref})[0]
     return {
       client: client,
-      states: [this.clientState(client)]
+      states: client ? [this.clientState(client)] : []
     }
   }
 
@@ -43,7 +43,7 @@ export class Client extends React.Component {
     if (client) {
       var newState = this.clientState(client)
 
-      //if (!_.eq(_.without(newState, 'at'), _.without(states[0], 'at')))
+      if (!_.eq(_.omit(newState, 'at'), _.omit(states[0], 'at')))
         states.unshift(newState)
 
       this.setState({
@@ -61,30 +61,31 @@ export class Client extends React.Component {
     var
       client = this.props.client || this.state.client,
       states = this.state.states,
-      previouslyAvailable = undefined === states[1] || states[1].available
+      available =           (states[0] || {}).available,
+      downConn =            (states[0] || {}).port,
+      upConn =              (states[0] || {}).remote,
+      previouslyAvailable = (states[1] || {}).available,
+      previouslyDownConn =  (states[1] || {}).port,
+      previouslyUpConn =    (states[1] || {}).remote
 
     if (!client)
       return this.renderErr()
 
-    var alert;
+    var alert = this.state.alert;
 
-    if (!client.available) {
-      alert = {
-        style: 'warning',
-        glyph: 'warning-sign',
-        content: <span>
-                   <strong>Warning: </strong> the serial port was removed. The client
-                   have been disconnected. Re-insert the serial port to resume communication.
-                 </span>
-      }
-    } else if (client.available && !previouslyAvailable) {
-      alert = {
-        style: 'success',
-        glyph: 'info-sign',
-        content: <span>Serial port re-connected.</span>,
-        expire: 7500
-      }
-    }
+    if (available && false === previouslyAvailable)
+      alert = { content: <span>Serial port was added back</span>, style: 'success', expire: 7500, glyph: 'info-sign' }
+    if (downConn && false === previouslyDownConn)
+      alert = { content: <span>Serial port connection established</span>, style: 'success', expire: 7500, glyph: 'info-sign' }
+    if (upConn && false === previouslyUpConn)
+      alert = { content: <span>Connected to Tiny Mesh Cloud</span>, style: 'success', expire: 7500, glyph: 'info-sign' }
+
+    if (!available && true === previouslyAvailable)
+      alert = { content: <span>Serial Port device was removed</span>, style: 'danger', expire: 0, glyph: 'warning-sign' }
+    if (!upConn && true === previouslyUpConn)
+      alert = { content: <span>Connection to Tiny Mesh Cloud lost</span>, style: 'danger', expire: 0, glyph: 'warning-sign' }
+    if (!downConn && true === previouslyDownConn)
+      alert = { content: <span>Serial Port connection was lost</span>, style: 'danger', expire: 0, glyph: 'warning-sign' }
 
     return (
       <div>
@@ -118,7 +119,12 @@ export class Client extends React.Component {
               <Row className="full-height" style={{zIndex: 1, position: 'relative'}}>
 
 
-                <RouteHandler client={client} states={states} backend={this.props.backend}/>
+                <RouteHandler
+                  client={client}
+                  states={states}
+                  backend={this.props.backend}
+                  notify={(alert) => this.state.alert !== alert && this.setState({alert: alert})}
+                  />
               </Row>
             </Grid>
           </Col>

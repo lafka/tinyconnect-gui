@@ -88,13 +88,28 @@ export default class Console extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.log(nextProps.states[0], 'state', 'new client state -> ')
+    var
+      states = this.props.states,
+      available =           (states[0] || {}).available,
+      downConn =            (states[0] || {}).port,
+      upConn =              (states[0] || {}).remote,
+      previouslyAvailable = (states[1] || {}).available,
+      previouslyDownConn =  (states[1] || {}).port,
+      previouslyUpConn =    (states[1] || {}).remote
 
-    if (this.props.client.ref !== nextProps.client.ref) {
-      console.log('rebinding client.data:<...> from', this.props.client.ref, 'to', nextProps.client.ref)
-      this.props.backend.removeListener('client.data:' + this.props.client.ref, this.handleClientData.bind(this))
-      this.props.backend.on('client.data:' + nextProps.client.ref, this.handleClientData.bind(this))
-    }
+    if (available && false === previouslyAvailable)
+      this.log('Serial port was added back', 'link')
+    if (downConn && false === previouslyDownConn)
+      this.log('Serial port connection established', 'link')
+    if (upConn && false === previouslyUpConn)
+      this.log('Connected to Tiny Mesh Cloud', 'link')
+
+    if (!available && true === previouslyAvailable)
+      this.log('Serial Port device was removed', 'link')
+    if (!upConn && true === previouslyUpConn)
+      this.log('Connection to Tiny Mesh Cloud lost', 'link')
+    if (!downConn && true === previouslyDownConn)
+      this.log('Serial Port connection was lost', 'link')
   }
 
   handleResize(e) {
@@ -198,7 +213,7 @@ export default class Console extends React.Component {
   }
 
   log(res, channel, prefix) {
-    var buf = _.reduce(_.omit(res, 'at'), (acc, v, k) => acc + ", " + k + ": " + v, "").replace(/^, /, '')
+    var buf = _.isString(res) ? res : _.reduce(_.omit(res, 'at'), (acc, v, k) => acc + ", " + k + ": " + v, "").replace(/^, /, '')
     this.state.lines.push({
       date: res.at || new Date(),
       buf: (prefix || "") + buf,
