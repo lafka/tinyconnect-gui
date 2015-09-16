@@ -89,14 +89,15 @@ export class Client extends React.Component {
 
     return (
       <div>
-        {alert &&
-            <Expire delay={alert.expire}>
-              <Alert bsStyle={alert.style} style={{marginLeft: '-15px'}}>
-                 <Glyphicon glyph={alert.glyph}>&nbsp;</Glyphicon>
+        {alert
+            ? <Expire delay={alert.expire}>
+                <Alert bsStyle={alert.style} style={{marginLeft: '-15px'}}>
+                   <Glyphicon glyph={alert.glyph}>&nbsp;</Glyphicon>
 
-                 {alert.content || null}
-              </Alert>
-            </Expire> || <div style={{padding: '15px', marginBottom: '21px', border: '1px solid transparent'}}>&nbsp;</div>}
+                   {alert.content || null}
+                </Alert>
+              </Expire>
+            : <div style={{padding: '15px', marginBottom: '21px', border: '1px solid transparent'}}>&nbsp;</div>}
       <Grid
         fluid={true}
         className="client">
