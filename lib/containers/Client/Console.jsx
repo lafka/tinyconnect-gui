@@ -244,7 +244,11 @@ export default class Console extends React.Component {
   patchClient(patch) {
     this.props.backend.send('client.update', this.props.client.ref, patch)
       .done(
-        (client) => null,
+        (client) => this.props.notify({
+            expire: 7500,
+            glyph: 'info-sign',
+            content: <span><strong>Client updated was succesfull</strong></span>
+          }),
         (err) => this.props.notify({
             expire: 0,
             glyph: 'warning-sign',
