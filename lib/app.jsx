@@ -22,9 +22,6 @@ import 'bootswatch-sass/superhero/bootstrap.css'
 import './style/app.scss'
 import '../index.html'
 
-// for loading backend at runtime
-var requirejs = require("requirejs")
-
 class App extends React.Component {
   static getInitialState() {
 
@@ -91,7 +88,7 @@ class App extends React.Component {
             if (idx >= 0)
               prevState.clients[idx] = client
 
-            return {clients: prevState.clients}
+            return {clients: [].concat(prevState.clients)}
           })
         }.bind(this))
 
