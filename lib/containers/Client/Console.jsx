@@ -355,7 +355,15 @@ export default class Console extends React.Component {
           <div className="options" ref="options">
             <SplitButton bsStyle="default" id="baudrates" title={bpsTitle}>
               {_.map(bpsRates, (bps, k) =>
-                <MenuItem className={client.port.baudrate === bps && "active" || ""} eventKey={k} key={k}>{bps}</MenuItem>)}
+                <MenuItem
+                  className={client.port.baudrate === bps && "active" || ""}
+                  eventKey={k}
+                  key={k}
+                  onSelect={ctx.patchClient.bind(ctx, {port: {baudrate: bps}})}
+                  >
+
+                  {bps}
+                </MenuItem>)}
             </SplitButton>
 
             <SplitButton bsStyle="default" id="tty-mode" title={serialMode}>
