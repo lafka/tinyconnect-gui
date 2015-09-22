@@ -86,7 +86,8 @@ export default class Settings extends React.Component {
                 <h4>Client Settings</h4>
                 <Input
                   type="text"
-                  value={patch.name || client.name || client.port.uniqueID}
+                  defaultValue={patch.name || client.name || client.port.uniqueID}
+                  value={patch.name}
                   label="Name"
                   name="name"
                   onChange={this.setField.bind(this)}
@@ -94,7 +95,8 @@ export default class Settings extends React.Component {
 
                 <Input
                   type="text"
-                  value={client.port.path}
+                  defaultValue={client.port.path}
+                  value={(patch.port || {}).path}
                   label="Serialport"
                   disabled
                   placeholder="Serialport path" />
@@ -120,7 +122,8 @@ export default class Settings extends React.Component {
                 <h4>Client Settings</h4>
                 <Input
                   type="text"
-                  value={client.entity.nid}
+                  defaultValue={client.entity.nid}
+                  value={(patch.entity || {}).nid}
                   name="entity.nid"
                   label="Network ID (NID)"
                   disabled
@@ -128,7 +131,8 @@ export default class Settings extends React.Component {
 
                 <Input
                   type="text"
-                  value={client.entity.sid}
+                  defaultValue={client.entity.sid}
+                  value={(patch.entity || {}).sid}
                   label="System ID (SID)"
                   name="entity.sid"
                   disabled
@@ -137,7 +141,8 @@ export default class Settings extends React.Component {
                 <Input
                   type="text"
                   label="Unique ID (UID)"
-                  value={client.entity.uid}
+                  defaultValue={client.entity.uid}
+                  value={(patch.entity || {}).uid}
                   name="entity.uid"
                   placeholder="1.0.0.0"
                   disabled />
@@ -155,7 +160,8 @@ export default class Settings extends React.Component {
                 <h4>TCP Settings</h4>
                 <Input
                   type="text"
-                  value={(patch.remote || {}).host || client.remote.host}
+                  defaultValue={client.remote.host}
+                  value={(patch.remote || {}).host}
                   label="Upstream Hostname"
                   name="remote.hostname"
                   onChange={this.setField.bind(this)}
@@ -163,7 +169,8 @@ export default class Settings extends React.Component {
 
                 <Input
                   type="text"
-                  value={(patch.remote || {}).port || client.remote.port}
+                  defaultValue={client.remote.port}
+                  value={(patch.remote || {}).port}
                   label="Upstream Port"
                   name="remote.port"
                   onChange={this.setField.bind(this)}
@@ -177,7 +184,8 @@ export default class Settings extends React.Component {
                   label="Client Baudrate"
                   name="port.baudrate"
                   onChange={this.setField.bind(this)}
-                  value={(patch.port || {}).baudrate || client.port.baudrate}
+                  defaultValue={client.port.baudrate}
+                  value={(patch.port || {}).baudrate}
                   placeholder="Client Baudrate">
 
                   {bpsRates.map((bps, k) => <option key={k} value={bps}>{bps}</option>)}
