@@ -16,7 +16,6 @@ import {Client, Console as ClientConsole, Settings as ClientSettings} from './co
 import {BackendConnectionError} from './errors.jsx'
 
 import Q from 'q'
-import SockJS from 'sockjs-client'
 
 import 'bootswatch-sass/superhero/bootstrap.css'
 import './style/app.scss'
